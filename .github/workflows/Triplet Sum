@@ -1,0 +1,133 @@
+Brute Force solution- Using three nested loop, iterating through each combination of three elements.
+#include <iostream>
+#include <vector>
+#include <cstring>
+#include <algorithm>
+#include <set>
+
+using namespace std;
+
+vector<vector<int>> tripletsSum(const vector<int>& nums)
+{
+    int n= nums.size();
+    set<vector<int>> triplets;
+    
+    for(int i=0;i<n;i++)
+    {
+       for(int j=i+1;j<n;j++)
+        {
+           for(int k=j+1;k<n;k++)
+            {
+                if(nums[i] + nums[j] + nums[k] == 0)
+                {
+                    vector<int> triplet = {nums[i], nums[j], nums[k]};
+                    sort(triplet.begin(), triplet.end());
+                    triplets.insert(triplet);
+                }
+            } 
+        } 
+    }
+    vector<vector<int>> result(triplets.begin(), triplets.end());
+    return result;
+}
+
+int main()
+{
+    vector<int> nums = {-1,0,1,2,-1,-4};
+    vector<vector<int>> result = tripletsSum(nums);
+    
+    for(const auto& triplet: result)
+    {
+        for(int num: triplet)
+        {
+            cout << num<<" ";
+        }
+        cout <<endl;
+    }
+    return 0;
+}
+
+Time Complexity - O(n^3)
+
+Optimize Solution:
+#include <iostream>
+#include <vector>
+#include <cstring>
+#include <algorithm>
+#include <set>
+
+using namespace std;
+
+// Helper function to find all unique pairs that sum to target
+vector<vector<int>> PairSumSorted(const vector<int>& nums, int start, int target) 
+{
+    vector<vector<int>> pairs;
+    int left = start;
+    int right = nums.size() - 1;
+
+    while (left < right) 
+    {
+        int sum = nums[left] + nums[right];
+
+        if (sum == target) 
+        {
+            pairs.push_back({nums[left], nums[right]});
+
+            // Skip duplicates
+            int left_val = nums[left];
+            int right_val = nums[right];
+            while (left < right && nums[left] == left_val) ++left;
+            while (left < right && nums[right] == right_val) --right;
+        }
+        else if (sum < target) 
+        {
+            ++left;
+        }
+        else 
+        {
+            --right;
+        }
+    }
+
+    return pairs;
+}
+
+vector<vector<int>> tripletsSum(const vector<int>& nums)
+{
+    int n= nums.size();
+    vector<vector<int>> triplets;
+    
+    //let say if we fix one of the number then the problem will reduced to finding the other two.
+    //a+b+c = 0 -> b+c = -a  i.e. same as problem to finding a pair of numbers that sum to a target value
+    // Pair Sum - sorted - however we can only use that algorithm on a sorted array
+    //sort the input
+    sort(nums.begin(), nums.end());
+    
+    for(int i=0;i<n-2;i++)
+    {
+        //Optimization: triplets consitsting of only positive numbers will never sum to zero
+        if(nums[i] > 0)
+            return {};
+            
+        //To avoid duplicate triplets, skip 'a' if it is same as the previous number.
+        if(i>0 && nums[i] == nums[i-1]) continue;
+        
+        int a = nums[i];
+        int target = -a;
+        // Find all pairs that sum to a target of '-a' (-nums[i])
+        vector<vector<int>> pairs = PairSumSorted(nums, i+1, -a);
+        
+        for(auto& pair: pairs)
+        {
+            triplets.push_back({a, pair[0], pair[1]});
+        }
+    }
+    
+    return triplets;
+}
+
+Time Complexity - O(n^2)
+1.We first sort the array, which takes O(nlogn) time
+2.Then, for each of the n elements in the array, we call PairSumSorted at most once, which runs in O(n^2) time.
+Therefore, the total complexity is O(nlog(n)) + O(n^2) = O(n^2)
+Space Complexity - O(n)
