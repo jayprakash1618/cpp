@@ -52,9 +52,7 @@ Time Complexity - O(n^3)
 Optimize Solution:
 #include <iostream>
 #include <vector>
-#include <cstring>
 #include <algorithm>
-#include <set>
 
 using namespace std;
 
@@ -92,38 +90,55 @@ vector<vector<int>> PairSumSorted(const vector<int>& nums, int start, int target
     return pairs;
 }
 
-vector<vector<int>> tripletsSum(const vector<int>& nums)
+// Main function to find all triplets with sum = 0
+vector<vector<int>> triplet_sum(vector<int>& nums) 
 {
-    int n= nums.size();
     vector<vector<int>> triplets;
-    
-    //let say if we fix one of the number then the problem will reduced to finding the other two.
+    int n = nums.size();
+
+     //let say if we fix one of the number then the problem will reduced to finding the other two.
     //a+b+c = 0 -> b+c = -a  i.e. same as problem to finding a pair of numbers that sum to a target value
     // Pair Sum - sorted - however we can only use that algorithm on a sorted array
     //sort the input
     sort(nums.begin(), nums.end());
     
-    for(int i=0;i<n-2;i++)
+    for (int i = 0; i < n - 2; ++i) 
     {
         //Optimization: triplets consitsting of only positive numbers will never sum to zero
-        if(nums[i] > 0)
-            return {};
-            
+        if (nums[i] > 0) break;
+
         //To avoid duplicate triplets, skip 'a' if it is same as the previous number.
-        if(i>0 && nums[i] == nums[i-1]) continue;
-        
+        if (i > 0 && nums[i] == nums[i - 1]) continue;
+
         int a = nums[i];
         int target = -a;
+
         // Find all pairs that sum to a target of '-a' (-nums[i])
-        vector<vector<int>> pairs = PairSumSorted(nums, i+1, -a);
-        
-        for(auto& pair: pairs)
+        vector<vector<int>> pairs = PairSumSorted(nums, i + 1, target);
+
+        for (auto& pair : pairs) 
         {
             triplets.push_back({a, pair[0], pair[1]});
         }
     }
-    
+
     return triplets;
+}
+
+int main() 
+{
+    vector<int> nums = {-1, 0, 1, 2, -1, -4};
+
+    vector<vector<int>> result = triplet_sum(nums);
+
+    for (const auto& triplet : result) 
+    {
+        for (int num : triplet)
+            cout << num << " ";
+        cout << endl;
+    }
+
+    return 0;
 }
 
 Time Complexity - O(n^2)
